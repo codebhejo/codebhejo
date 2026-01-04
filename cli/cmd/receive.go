@@ -12,9 +12,9 @@ import (
 	"github.com/pion/webrtc/v3"
 	"github.com/spf13/cobra"
 
-	"gitlab.com/9ovindyadav/codefile/cli/internal/config"
-	signalpkg "gitlab.com/9ovindyadav/codefile/cli/internal/signal"
-	webrtcpeer "gitlab.com/9ovindyadav/codefile/cli/internal/webrtc"
+	"github.com/codebhejo/codebhejo/cli/internal/config"
+	signalpkg "github.com/codebhejo/codebhejo/cli/internal/signal"
+	webrtcpeer "github.com/codebhejo/codebhejo/cli/internal/webrtc"
 )
 
 var receiveCmd = &cobra.Command{

@@ -7,7 +7,7 @@ COPY ./cli ./
 
 RUN mkdir -p bin && \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -ldflags "-X gitlab.com/9ovindyadav/codefile/cli/internal/config.API=https://codefile-api.9ovind.in -X gitlab.com/9ovindyadav/codefile/cli/internal/config.WEB_URL=https://codebhejo.in" \
+    go build -ldflags "-X github.com/codebhejo/codebhejo/cli/internal/config.API=https://codefile-api.9ovind.in -X github.com/codebhejo/codebhejo/cli/internal/config.WEB_URL=https://codebhejo.in" \
     -o ./bin/codebhejo-linux-amd64 ./main.go
 
 # Frontend-build
