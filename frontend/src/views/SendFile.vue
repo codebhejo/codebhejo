@@ -89,8 +89,8 @@ async function start() {
   socket.on("peer-joined", async () => {
     console.log("👤 Peer joined");
 
-    cleanupConnection();      // 🔥 reset
-    setupConnection();        // 🔥 new pc + channel
+    cleanupConnection();      // reset
+    setupConnection();        // new pc + channel
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
@@ -118,7 +118,7 @@ async function sendFile() {
     size: file.value.size
   }));
 
-  const CHUNK_SIZE = 16 * 1024; // 🔥 CRITICAL
+  const CHUNK_SIZE = 16 * 1024;
   let offset = 0;
   const fileSize = file.value.size;
 

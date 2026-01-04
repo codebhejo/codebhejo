@@ -62,7 +62,7 @@ const saveCode = async (force = false) => {
       body: JSON.stringify({
         fileName: fileName.value,
         fileId: fileId,
-        contentType: "text/plain", // You might want to update this based on language
+        contentType: "text/plain",
       }),
       credentials: "include",
     });
