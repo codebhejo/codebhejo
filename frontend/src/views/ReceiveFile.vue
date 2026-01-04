@@ -95,7 +95,6 @@ function onMessage(msg) {
   if (receivedBytes >= fileSize) finishDownload();
 }
 
-/* -------------------- DOWNLOAD -------------------- */
 function finishDownload() {
   const blob = new Blob(chunks);
   download(blob, fileName.value);
@@ -104,7 +103,6 @@ function finishDownload() {
   cleanupTransfer();
 }
 
-/* -------------------- HELPERS -------------------- */
 function download(blob, name) {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -134,7 +132,7 @@ function cleanupTransfer() {
   fileSize = 0;
 }
 
-/* -------------------- WAIT TIMER -------------------- */
+
 function startWaitTimer() {
   clearWaitTimer();
   waitTimer = setTimeout(() => {
@@ -150,7 +148,6 @@ function clearWaitTimer() {
   }
 }
 
-/* -------------------- LIFECYCLE -------------------- */
 onMounted(() => {
   if (room.value) {
     join();
@@ -210,7 +207,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* ---------- Wrapper Styles ---------- */
+
 .waiting-wrapper,
 .receive-wrapper,
 .no-room {
@@ -223,7 +220,6 @@ onBeforeUnmount(() => {
   font-family: "Fira Code", monospace;
 }
 
-/* ---------- Card Styles ---------- */
 .card {
   width: 360px;
   padding: 28px;
@@ -233,14 +229,12 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-/* ---------- File Name ---------- */
 .filename {
   font-size: 16px;
   margin-bottom: 18px;
   word-break: break-all;
 }
 
-/* ---------- Progress Bar ---------- */
 .progress {
   height: 8px;
   background: #333;
@@ -254,7 +248,6 @@ onBeforeUnmount(() => {
   transition: width 0.25s ease;
 }
 
-/* ---------- Percent / Status ---------- */
 .percent {
   margin-top: 10px;
   font-size: 14px;
@@ -272,7 +265,6 @@ onBeforeUnmount(() => {
   color: #4caf50;
 }
 
-/* ---------- Waiting Card ---------- */
 .waiting-wrapper h2 {
   font-size: 18px;
   margin-bottom: 12px;
@@ -284,7 +276,6 @@ onBeforeUnmount(() => {
   color: #bbb;
 }
 
-/* ---------- No Room Card ---------- */
 .no-room h2 {
   font-size: 18px;
   margin-bottom: 12px;

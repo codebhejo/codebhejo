@@ -11,7 +11,7 @@ const API = import.meta.env.VITE_API_URL;
 
 const search = ref("");
 const limit = ref(10);
-const filterDate = ref(""); // single date
+const filterDate = ref("");
 const showDeleteConfirm = ref(false);
 const fileToDelete = ref(null);
 const isDeleting = ref(false);
