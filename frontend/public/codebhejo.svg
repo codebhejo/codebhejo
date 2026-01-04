@@ -1,0 +1,46 @@
+<svg
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  xmlns="http://www.w3.org/2000/svg"
+  fill="none"
+>
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="#020617"/>
+
+  <!-- Left code bracket -->
+  <path
+    d="M22 18L14 32L22 46"
+    stroke="#38BDF8"
+    stroke-width="3.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Right code bracket -->
+  <path
+    d="M42 18L50 32L42 46"
+    stroke="#38BDF8"
+    stroke-width="3.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Paper plane (send / bhejo) -->
+  <path
+    d="M28 36L46 32L28 28L32 32L28 36Z"
+    fill="#22C55E"
+  />
+
+  <!-- Motion line -->
+  <line
+    x1="24"
+    y1="32"
+    x2="32"
+    y2="32"
+    stroke="#22C55E"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+</svg>
+

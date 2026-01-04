@@ -1,0 +1,47 @@
+name: Build & Push to Container registry
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      CI_REGISTRY: ${{ secrets.CI_REGISTRY }}
+      CI_USERNAME: ${{ secrets.CI_USERNAME }}
+      CI_PASSWORD: ${{ secrets.CI_PASSWORD }}
+      IMAGE_NAME: 9ovind/codebhejo
+      TAG: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Container Registry
+        run: |
+          echo "$CI_PASSWORD" | docker login $CI_REGISTRY \
+            -u $CI_USERNAME \
+            --password-stdin
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            --target frontend \
+            -t $CI_REGISTRY/$IMAGE_NAME:$TAG-frontend \
+            .
+
+      - name: Build backend image
+        run: |
+          docker build \
+            --target backend \
+            -t $CI_REGISTRY/$IMAGE_NAME:$TAG-backend \
+            .
+
+      - name: Push frontend image
+        run: docker push $CI_REGISTRY/$IMAGE_NAME:$TAG-frontend
+
+      - name: Push backend image
+        run: docker push $CI_REGISTRY/$IMAGE_NAME:$TAG-backend
