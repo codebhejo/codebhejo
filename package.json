@@ -1,0 +1,26 @@
+{
+  "name": "codefile",
+  "version": "1.0.0",
+  "description": "A simple internal code-sharing and collaboration tool for developers.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "postinstall": "npm install --prefix frontend && npm install --prefix backend",
+    "migrate": "npm run migrate --prefix backend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/9ovindyadav/codefile.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://gitlab.com/9ovindyadav/codefile/issues"
+  },
+  "homepage": "https://gitlab.com/9ovindyadav/codefile#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
