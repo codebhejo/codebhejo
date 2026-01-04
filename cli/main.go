@@ -1,6 +1,6 @@
 package main
 
-import "gitlab.com/9ovindyadav/codefile/cli/cmd"
+import "github.com/codebhejo/codebhejo/cli/cmd"
 
 func main() {
 	cmd.Execute()

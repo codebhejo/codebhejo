@@ -2,7 +2,7 @@
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { ref } from "vue";
-import { Share2 } from "lucide-vue-next";
+import { Github, Share2 } from "lucide-vue-next";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -23,16 +23,23 @@ const logout = async () => {
   </div>
 
   <div class="nav-right">
-    <button
-      class="share-btn"
-      @click="router.push('/share-file')"
+    <a
+      href="https://github.com/codebhejo/codebhejo"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="github-link"
     >
+      <Github size="18" />
+      <span>GitHub</span>
+    </a>
+
+    <button class="share-btn" @click="router.push('/share-file')">
       <Share2 size="18"/>
       <span>Share File</span>
     </button>
-    <!-- Loading -->
+
     <span v-if="auth.loading" class="nav-text">Loading…</span>
-    <!-- Logged out -->
+
     <button
       v-else-if="!auth.isLoggedIn"
       class="signin-btn"
@@ -41,7 +48,6 @@ const logout = async () => {
       Sign in
     </button>
 
-    <!-- Logged in -->
     <div v-else class="profile-wrapper">
       <div class="avatar" @click="showMenu = !showMenu">
         {{ auth.user.email.charAt(0).toUpperCase() }}
@@ -155,4 +161,26 @@ const logout = async () => {
 .dropdown button.danger {
   color: #ef4444;
 }
+
+.github-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 20px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #1e1e1f;
+  background: transparent;
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.github-link:hover {
+  color: #ffffff;
+  border-color: #333;
+  background: #1f1f1f;
+}
+
 </style>

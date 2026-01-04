@@ -1,4 +1,4 @@
-module gitlab.com/9ovindyadav/codefile/cli
+module github.com/codebhejo/codebhejo/cli
 
 go 1.25.3
 
