@@ -28,8 +28,8 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the enjayctl version",
+	Short: "Print the codebhejo version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("enjayctl version", "v0.0.1")
+		fmt.Println("codebhejo version", "v0.0.1")
 	},
 }
