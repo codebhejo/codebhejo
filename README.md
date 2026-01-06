@@ -62,12 +62,22 @@ Instantly create and share code snippets with your team.
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -ldflags "-X github.com/codebhejo/codebhejo/cli/internal/config.API=http://localhost:3000 -X github.com/codebhejo/codebhejo/cli/internal/config.WEB_URL=http://localhost:5173" \
     -o codebhejo-linux-amd64 ./main.go
+
+    # Executable permission
+    chmod +x codebhejo-linux-amd64
+
+    # Move binary to local user bin directory
+    sudo mv codebhejo-linux-amd64 /usr/local/bin/codebhejo
+
+    # check version
+    codebhejo version
     ```
 
 
 ## Contributing
 
-Contributions are welcome!  
+Contributions are welcome!
+
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting a pull request.
 
 
