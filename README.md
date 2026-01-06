@@ -4,6 +4,16 @@ A simple internal code-sharing and collaboration tool for developers.
 
 Instantly create and share code snippets with your team.
 
+## Table of Contents
+
+- [Development Guide](#development-guide)
+  - [Prerequisite](#prerequisite)
+  - [Local Setup](#local-setup)
+  - [Creating AWS S3 credentials](#creating-aws-s3-credentials)
+  - [CLI Tool Development](#cli-tool-development)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Development guide
 
 ### Prerequisite
@@ -38,6 +48,48 @@ Instantly create and share code snippets with your team.
     ```
 
 7. Open in Browser [http://localhost:5173](http://localhost:5173)
+
+
+### Creating AWS S3 credentials
+
+Now to set S3 bucket env variables follow below steps:
+```bash
+S3_ACCESS_KEY=""
+S3_SECRET_KEY=""
+S3_BUCKET="codebhejo"
+S3_REGION="ap-south-1"
+```
+
+1. Login to your AWS account and open IAM (Identity and access management)
+2. Create a user named `codebhejo`
+3. Now go to `policies` and create a policy named `codebhejo-s3-bucket` with below json value to give user minimum required access of s3 bucket
+
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "CodebhejoListBucket",
+                "Effect": "Allow",
+                "Action": "s3:ListBucket",
+                "Resource": "arn:aws:s3:::codebhejo"
+            },
+            {
+                "Sid": "CodebhejoS3Access",
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:DeleteObject"
+                ],
+                "Resource": "arn:aws:s3:::codebhejo/*"
+            }
+        ]
+    }
+    ```
+4. Open user `codebhejo` and attach permission policy `codebhejo-s3-bucket` to user.
+5. After setting permission policy to user open `Security credentials` section and create `Access key`
+
 
 ### CLI tool development
 1. Make sure `Golang` is installed
