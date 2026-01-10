@@ -1,13 +1,12 @@
 const API = import.meta.env.VITE_API_URL;
 
-let cachedAuth = null;
-
 export async function isAuthenticated() {
-  if (cachedAuth !== null) return cachedAuth;
-
   try {
-    cachedAuth = Boolean(localStorage.getItem("token"));
-    return cachedAuth;
+    const res = await fetch(`${API}/auth/me`, {
+      credentials: "include",
+    });
+    
+    return res.ok;
   } catch {
     return false;
   }
