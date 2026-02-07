@@ -74,30 +74,48 @@ onMounted(async () => {
     </header>
 
     <main class="home-main">
-      <div class="actions">
-        <button class="create-btn" @click="createFile">
-          Create New Code File
-        </button>
+  <div class="actions">
+    <button class="create-btn" @click="createFile">
+      Create New Code File
+    </button>
 
-        <!-- Secondary action -->
-        <button
-          v-if="auth.isLoggedIn"
-          class="files-btn"
-          @click="router.push('/files')"
-        >
-          <TextAlignJustify size="18"/>
-          <span>View My Files</span>
-        </button>
+    <!-- Secondary action -->
+    <button
+      v-if="auth.isLoggedIn"
+      class="files-btn"
+      @click="router.push('/files')"
+    >
+      <TextAlignJustify size="18"/>
+      <span>View My Files</span>
+    </button>
 
-        <p v-else class="hint">
-          <a
-            href="#"
-            @click.prevent="router.push('/signin')"
-            class="signin-link"
-          >Sign in</a> to view your saved files
-        </p>
-      </div>
-    </main>
+    <p v-else class="hint">
+      <a
+        href="#"
+        @click.prevent="router.push('/signin')"
+        class="signin-link"
+      >Sign in</a> to view your saved files
+    </p>
+  </div>
+
+  <!-- SEO TEXT SECTION -->
+  <section class="seo-text">
+    <h2>Free Online File Sharing</h2>
+    <p>
+      CodeBhejo is a fast and secure file sharing platform.
+      Send files instantly without signup.
+      Perfect for quick transfers between devices.
+    </p>
+
+    <h3>How it works</h3>
+    <ul>
+      <li>Select your file</li>
+      <li>Get a secure link</li>
+      <li>Share it with anyone</li>
+    </ul>
+  </section>
+</main>
+
 
     <div class="ip-section">
       <p class="ip-text">
@@ -237,4 +255,27 @@ onMounted(async () => {
 .signin-link:hover {
   color: #ffffff;
 }
+.seo-text {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+  text-align: center;
+  color: #b0b0b0;
+}
+
+.seo-text h2,
+.seo-text h3 {
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.seo-text ul {
+  list-style: none;
+  padding: 0;
+}
+
+.seo-text li {
+  margin: 6px 0;
+}
+
 </style>
