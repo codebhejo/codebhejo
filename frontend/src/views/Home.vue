@@ -97,23 +97,6 @@ onMounted(async () => {
       >Sign in</a> to view your saved files
     </p>
   </div>
-
-  <!-- SEO TEXT SECTION -->
-  <section class="seo-text">
-    <h2>Free Online File Sharing</h2>
-    <p>
-      CodeBhejo is a fast and secure file sharing platform.
-      Send files instantly without signup.
-      Perfect for quick transfers between devices.
-    </p>
-
-    <h3>How it works</h3>
-    <ul>
-      <li>Select your file</li>
-      <li>Get a secure link</li>
-      <li>Share it with anyone</li>
-    </ul>
-  </section>
 </main>
 
 
@@ -254,28 +237,6 @@ onMounted(async () => {
 
 .signin-link:hover {
   color: #ffffff;
-}
-.seo-text {
-  max-width: 700px;
-  margin: 40px auto;
-  padding: 20px;
-  text-align: center;
-  color: #b0b0b0;
-}
-
-.seo-text h2,
-.seo-text h3 {
-  color: #ffffff;
-  margin-bottom: 10px;
-}
-
-.seo-text ul {
-  list-style: none;
-  padding: 0;
-}
-
-.seo-text li {
-  margin: 6px 0;
 }
 
 </style>
