@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth.js";
+import Navbar from "../components/Navbar.vue";
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -58,6 +59,7 @@ function showError(text) {
 
 
 <template>
+  <Navbar/>
   <div class="container">
     <h1 class="title" :class="{ error: isError }">{{ message }}</h1>
     <p class="subtitle">{{ subMessage }}</p>
@@ -67,7 +69,7 @@ function showError(text) {
 
 <style scoped>
 .container {
-  height: 100vh;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   justify-content: center;

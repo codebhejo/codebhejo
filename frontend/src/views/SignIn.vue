@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import Navbar from "../components/Navbar.vue";
 
 const email = ref("");
 const loading = ref(false);
@@ -46,7 +47,9 @@ const sendLink = async () => {
 </script>
 
 <template>
+  <Navbar/>
   <div class="container">
+
     <h1 class="title">Sign in</h1>
     <p class="subtitle">We’ll email you a secure sign-in link.</p>
 
@@ -84,7 +87,7 @@ const sendLink = async () => {
 
 <style scoped>
 .container {
-  height: 100vh;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
