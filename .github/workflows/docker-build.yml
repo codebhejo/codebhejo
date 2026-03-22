@@ -2,8 +2,8 @@ name: Build & Push to Container registry
 
 on:
   push:
-    tags:
-      - "*"
+    branches:
+      - main
 
 jobs:
   build:
