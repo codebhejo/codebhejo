@@ -35,7 +35,6 @@ function setupConnection() {
   channel.binaryType = "arraybuffer";
 
   channel.onopen = () => {
-    console.log("✅ P2P CONNECTED");
     progress.value = 0;
     sendFile();
   };
@@ -54,8 +53,6 @@ function setupConnection() {
   };
 
   pc.onconnectionstatechange = () => {
-    console.log("PC:", pc.connectionState);
-
     if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
       cleanupConnection();
     }
@@ -63,8 +60,6 @@ function setupConnection() {
 }
 
 function cleanupConnection() {
-  console.log("🧹 Cleaning old connection");
-
   if (channel) {
     channel.close();
     channel = null;
@@ -87,8 +82,6 @@ async function start() {
   socket.emit("join", { room: room.value });
 
   socket.on("peer-joined", async () => {
-    console.log("👤 Peer joined");
-
     cleanupConnection();      // reset
     setupConnection();        // new pc + channel
 
@@ -137,7 +130,6 @@ async function sendFile() {
     progress.value = Math.min(100, (offset / fileSize) * 100);
   }
 
-  console.log("📦 File sent");
 }
 
 function copyLink() {
@@ -185,13 +177,22 @@ function reset() {
 
         <div class="qr-container">
           <div class="qr-box">
-          <QrcodeVue
-            :value="shareLink"
-            :size="96"
-            background="#121212"
-            foreground="#ffffff"
-          />
+            <QrcodeVue
+              :value="shareLink"
+              :size="96"
+              background="#121212"
+              foreground="#ffffff"
+            />
+          </div>
         </div>
+
+        <div v-if="progress > 0" class="transfer-progress">
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
+          </div>
+          <span class="progress-label">
+            {{ progress < 100 ? `Sending… ${Math.floor(progress)}%` : 'Sent ✓' }}
+          </span>
         </div>
       </div>
 
@@ -269,6 +270,7 @@ function reset() {
   background: #1f1f1f;
   border-color: #555;
 }
+
 
 .file-box span {
   font-size: 14px;
@@ -377,4 +379,28 @@ function reset() {
   color: #9ca3af;
 }
 
+.transfer-progress {
+  margin-top: 16px;
+}
+
+.progress-bar-track {
+  height: 6px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #4caf50;
+  transition: width 0.25s ease;
+}
+
+.progress-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+}
 </style>

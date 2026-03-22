@@ -61,6 +61,7 @@ function showError(text) {
 <template>
   <Navbar/>
   <div class="container">
+    <div v-if="!isError" class="spinner"></div>
     <h1 class="title" :class="{ error: isError }">{{ message }}</h1>
     <p class="subtitle">{{ subMessage }}</p>
   </div>
@@ -88,6 +89,20 @@ function showError(text) {
 }
 
 .title.error {
-  color: #ef4444; /* red */
+  color: #ef4444;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #333;
+  border-top-color: #e0e0e0;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

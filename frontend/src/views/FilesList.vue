@@ -363,12 +363,17 @@ function handleDeleteCancel() {
 .create-btn {
   padding: 10px 12px;
   font-size: 13px;
-  border: none;
+  border: 1px solid #444;
   border-radius: 8px;
-  background-color: #1f1f1f;
+  background-color: #2a2a2a;
   color: #ffffff;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.create-btn:hover {
+  background-color: #3a3a3a;
+  border-color: #666;
 }
 
 .copy-btn,

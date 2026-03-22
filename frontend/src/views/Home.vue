@@ -144,7 +144,7 @@ onMounted(async () => {
 /* Header at the top */
 .home-header {
   text-align: center;
-  padding: 150px 16px 16px 16px;
+  padding: 80px 16px 16px 16px;
 }
 
 .title {
@@ -172,16 +172,17 @@ onMounted(async () => {
 .create-btn {
   padding: 16px 40px;
   font-size: 18px;
-  border: none;
+  border: 1px solid #555;
   border-radius: 8px;
-  background-color: #1f1f1f;
+  background-color: #2a2a2a;
   color: #ffffff;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .create-btn:hover {
-  background-color: #333333;
+  background-color: #3a3a3a;
+  border-color: #888;
 }
 
 /* Footer at the bottom */

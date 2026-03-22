@@ -59,7 +59,6 @@ function join() {
   pc.ondatachannel = e => {
     dataChannel = e.channel;
     dataChannel.onopen = () => {
-      console.log("✅ Receiver connected");
       resetUI();
       clearWaitTimer(); // sender connected in time
     };
@@ -119,7 +118,6 @@ function resetUI() {
 function resetStallTimer() {
   clearTimeout(stallTimer);
   stallTimer = setTimeout(() => {
-    console.warn("⚠ Transfer stalled");
     dataChannel?.close();
   }, 30000);
 }
@@ -173,6 +171,7 @@ onBeforeUnmount(() => {
   <!-- Waiting for sender -->
   <div v-if="loading" class="waiting-wrapper">
     <div class="card">
+      <div class="pulse-ring"></div>
       <h2>Waiting for sender...</h2>
       <p>File will start downloading automatically when sender connects.</p>
     </div>
@@ -263,6 +262,20 @@ onBeforeUnmount(() => {
   font-size: 15px;
   font-weight: 600;
   color: #4caf50;
+}
+
+.pulse-ring {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid #facc15;
+  margin: 0 auto 16px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.5; }
 }
 
 .waiting-wrapper h2 {
