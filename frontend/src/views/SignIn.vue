@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import Navbar from "../components/Navbar.vue";
+import { Mail, ArrowRight, Loader } from "lucide-vue-next";
 
 const email = ref("");
 const loading = ref(false);
@@ -10,12 +11,8 @@ const emailInput = ref(null);
 
 const API = import.meta.env.VITE_API_URL;
 
-const validateEmail = (email) => {
-  if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
-    return true;
-  }
-  return false;
-};
+const validateEmail = (e) =>
+  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(e);
 
 onMounted(() => {
   emailInput.value?.focus();
@@ -27,7 +24,6 @@ const sendLink = async () => {
     error.value = "Please enter a valid email address.";
     return;
   }
-
   try {
     loading.value = true;
     await fetch(`${API}/auth/request-link`, {
@@ -35,10 +31,8 @@ const sendLink = async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: email.value }),
     });
-    loading.value = false;
     sent.value = true;
-  } catch (error) {
-    console.log(error);
+  } catch {
     alert("Something went wrong. Try again.");
   } finally {
     loading.value = false;
@@ -47,102 +41,205 @@ const sendLink = async () => {
 </script>
 
 <template>
-  <Navbar/>
-  <div class="container">
+  <Navbar />
+  <div class="page">
+    <div class="card">
 
-    <h1 class="title">Sign in</h1>
-    <p class="subtitle">We’ll email you a secure sign-in link.</p>
+      <!-- Icon -->
+      <div class="icon-wrap">
+        <Mail size="20" />
+      </div>
 
-    <form @submit.prevent="sendLink">
-      <input
-        ref="emailInput"
-        class="input"
-        type="email"
-        placeholder="Enter your email address"
-        v-model="email"
-        :disabled="sent"
-        autocomplete="email"
-        name="email"
-        @input="error = null"
-      />
+      <!-- Before send -->
+      <template v-if="!sent">
+        <h1 class="title">Sign in</h1>
+        <p class="subtitle">We'll send you a secure magic link.</p>
 
-      <p v-if="error" class="error">{{ error }}</p>
+        <form @submit.prevent="sendLink">
+          <div class="input-wrap" :class="{ 'has-error': error }">
+            <input
+              ref="emailInput"
+              class="input"
+              type="email"
+              placeholder="your@email.com"
+              v-model="email"
+              autocomplete="email"
+              name="email"
+              @input="error = null"
+            />
+          </div>
 
-      <button
-        v-if="!sent"
-        class="btn"
-        type="submit"
-        :disabled="loading || !email"
-      >
-        {{ loading ? "Sending..." : "Send login link" }}
-      </button>
-    </form>
+          <p v-if="error" class="error">{{ error }}</p>
 
-    <p v-if="sent" class="success">
-      Login link sent! Check your email to continue.
-    </p>
+          <button class="btn" type="submit" :disabled="loading || !email">
+            <Loader v-if="loading" size="14" class="spin" />
+            <template v-else>
+              Send magic link
+              <ArrowRight size="14" />
+            </template>
+          </button>
+        </form>
+      </template>
+
+      <!-- After send -->
+      <template v-else>
+        <h1 class="title">Check your email</h1>
+        <p class="subtitle">We sent a sign-in link to</p>
+        <p class="sent-email">{{ email }}</p>
+        <p class="sent-hint">Click the link in the email to sign in. You can close this tab.</p>
+      </template>
+
+    </div>
   </div>
 </template>
 
-
 <style scoped>
-.container {
-  height: 90vh;
+.page {
+  min-height: calc(100vh - 64px);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   background: #121212;
-  color: #e0e0e0;
-  font-family: "Fira Code", monospace;
+  font-family: 'Fira Code', monospace;
+  padding: 24px;
 }
 
-form {
+.card {
+  width: 100%;
+  max-width: 360px;
+  background: #161616;
+  border: 1px solid #242424;
+  border-radius: 14px;
+  padding: 32px 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.icon-wrap {
+  width: 42px;
+  height: 42px;
+  background: #1f1f1f;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  margin-bottom: 20px;
 }
 
 .title {
-  font-size: 42px;
-  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin: 0 0 6px;
 }
 
 .subtitle {
-  color: #b0b0b0;
-  margin-bottom: 32px;
+  font-size: 13px;
+  color: #555;
+  margin: 0 0 24px;
+}
+
+form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-wrap {
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.input-wrap:focus-within {
+  border-color: #444;
+}
+
+.input-wrap.has-error {
+  border-color: #5a2a2a;
 }
 
 .input {
-  width: 320px;
-  padding: 12px;
-  background: #1f1f1f;
-  border: 1px solid #333;
-  color: white;
-  border-radius: 6px;
-  margin-bottom: 20px;
-}
-
-.btn {
-  padding: 12px 32px;
-  background: #1f1f1f;
+  width: 100%;
+  padding: 11px 14px;
+  background: #1a1a1a;
   border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
+  outline: none;
+  color: #e0e0e0;
+  font-size: 13px;
+  font-family: inherit;
+  box-sizing: border-box;
 }
 
-.btn:hover {
-  background: #333;
+.input::placeholder {
+  color: #444;
 }
 
 .error {
-  color: #ff5252;
-  margin-bottom: 20px;
+  font-size: 12px;
+  color: #e06060;
+  text-align: left;
+  margin: 0;
 }
 
-.success {
-  color: #4caf50;
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  margin-top: 2px;
+}
+
+.btn:hover:not(:disabled) {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Success state */
+.sent-email {
+  font-size: 14px;
+  color: #e0e0e0;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin: 4px 0 16px;
+}
+
+.sent-hint {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
 }
 </style>
-
