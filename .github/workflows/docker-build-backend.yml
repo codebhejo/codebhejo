@@ -1,9 +1,11 @@
-name: Build & Push to Container registry
+name: Build & Push Backend Image
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "backend/**"
 
 jobs:
   build:
@@ -26,22 +28,12 @@ jobs:
             -u $CI_USERNAME \
             --password-stdin
 
-      - name: Build frontend image
-        run: |
-          docker build \
-            --target frontend \
-            -t $CI_REGISTRY/$IMAGE_NAME:$TAG-frontend \
-            .
-
       - name: Build backend image
         run: |
           docker build \
             --target backend \
             -t $CI_REGISTRY/$IMAGE_NAME:$TAG-backend \
             .
-
-      - name: Push frontend image
-        run: docker push $CI_REGISTRY/$IMAGE_NAME:$TAG-frontend
 
       - name: Push backend image
         run: docker push $CI_REGISTRY/$IMAGE_NAME:$TAG-backend

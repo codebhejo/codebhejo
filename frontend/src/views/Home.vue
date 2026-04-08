@@ -2,6 +2,7 @@
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import Navbar from "../components/Navbar.vue";
+import Footer from "../components/Footer.vue";
 import { createFile } from "../main.js";
 import { ref, onMounted } from "vue";
 import { TextAlignJustify } from "lucide-vue-next";
@@ -107,11 +108,7 @@ onMounted(async () => {
       </p>
     </div>
 
-    <footer class="home-footer">
-      <p class="footer-text">
-        Instantly create and share code snippets with your team.
-      </p>
-    </footer>
+    <Footer />
   </div>
 </template>
 
@@ -185,18 +182,6 @@ onMounted(async () => {
   border-color: #888;
 }
 
-/* Footer at the bottom */
-.home-footer {
-  text-align: center;
-  padding: 16px;
-  border-top: 1px solid #333;
-}
-
-.footer-text {
-  font-size: 16px;
-  color: #888888;
-  margin: 0;
-}
 
 .actions {
   display: flex;

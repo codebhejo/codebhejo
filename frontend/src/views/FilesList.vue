@@ -1,34 +1,32 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useFilesStore } from "../stores/files.js";
 import Navbar from "../components/Navbar.vue";
+import Footer from "../components/Footer.vue";
 import ConfirmDialog from "../components/ConfirmDialog.vue";
+import DatePicker from "../components/DatePicker.vue";
 import { createFile } from "../main.js";
+import { Link, Trash2, FileCode } from "lucide-vue-next";
 
 const filesStore = useFilesStore();
 const API = import.meta.env.VITE_API_URL;
 
 
 const search = ref("");
-const limit = ref(10);
 const filterDate = ref("");
 const showDeleteConfirm = ref(false);
 const fileToDelete = ref(null);
 const isDeleting = ref(false);
 
-
-const HARD_LIMIT_ALL = 200;
-
-const limitOptions = [
-  { label: "10", value: 10 },
-  { label: "50", value: 50 },
-  { label: "100", value: 100 },
-  { label: "All", value: "all" },
-];
+const PAGE_SIZE = 10;
+const currentPage = ref(1);
 
 onMounted(() => {
   filesStore.fetchFiles();
 });
+
+// Reset to page 1 whenever filters change
+watch([search, filterDate], () => { currentPage.value = 1; });
 
 function formatDate(date) {
   if (!date) return "-";
@@ -48,25 +46,53 @@ const filteredFiles = computed(() => {
 
   if (search.value.trim()) {
     const q = search.value.toLowerCase();
-    files = files.filter(file =>
-      file.name.toLowerCase().includes(q)
-    );
+    files = files.filter(file => file.name.toLowerCase().includes(q));
   }
 
   if (filterDate.value) {
     const start = new Date(filterDate.value).setHours(0, 0, 0, 0);
     const end = new Date(filterDate.value).setHours(23, 59, 59, 999);
-
     files = files.filter(file => {
       const updated = new Date(file.updated_at).getTime();
       return updated >= start && updated <= end;
     });
   }
 
-  const effectiveLimit =
-    limit.value === "all" ? HARD_LIMIT_ALL : limit.value;
+  return files;
+});
 
-  return files.slice(0, effectiveLimit);
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredFiles.value.length / PAGE_SIZE)));
+
+const pagedFiles = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE;
+  return filteredFiles.value.slice(start, start + PAGE_SIZE);
+});
+
+const pageNumbers = computed(() => {
+  const total = totalPages.value;
+  const cur = currentPage.value;
+  const pages = [];
+  const delta = 2;
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || (i >= cur - delta && i <= cur + delta)) {
+      pages.push(i);
+    } else if (pages[pages.length - 1] !== '…') {
+      pages.push('…');
+    }
+  }
+  return pages;
+});
+
+function goToPage(p) {
+  if (typeof p === 'number') currentPage.value = p;
+}
+
+const rangeLabel = computed(() => {
+  const total = filteredFiles.value.length;
+  if (!total) return "0 files";
+  const from = (currentPage.value - 1) * PAGE_SIZE + 1;
+  const to = Math.min(currentPage.value * PAGE_SIZE, total);
+  return total <= PAGE_SIZE ? `${total} file${total !== 1 ? 's' : ''}` : `${from}–${to} of ${total}`;
 });
 
 const copied = ref(false);
@@ -137,115 +163,123 @@ function handleDeleteCancel() {
       Link copied ✔
     </div>
 
-    <div class="header">
-      <div class="controls">
-        <input
-          v-model="search"
-          type="text"
-          class="search-input"
-          placeholder="Search files..."
-        />
+    <div class="list-card">
+      <div class="header">
+        <div class="controls">
+          <input
+            v-model="search"
+            type="text"
+            class="search-input"
+            placeholder="Search files..."
+          />
+          <DatePicker v-model="filterDate" />
+          <span class="file-count">{{ rangeLabel }}</span>
+        </div>
 
-        <input
-          v-model="filterDate"
-          type="date"
-          class="date-input"
-          title="Filter by date"
-        />
-
-        <select v-model="limit" class="limit-select">
-          <option
-            v-for="opt in limitOptions"
-            :key="opt.label"
-            :value="opt.value"
-          >
-            {{ opt.label }}
-          </option>
-        </select>
+        <button class="create-btn" @click="createFile">
+          + New File
+        </button>
       </div>
 
-      <button class="create-btn" @click="createFile">
-        New Code File
-      </button>
+      <table class="files-table">
+        <thead>
+          <tr>
+            <th>SR</th>
+            <th>Name</th>
+            <th class="date-col right">Updated At</th>
+            <th class="date-col right">Created At</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            v-for="(file, index) in pagedFiles"
+            :key="file.file_id"
+          >
+            <td class="sr">{{ (currentPage - 1) * PAGE_SIZE + index + 1 }}</td>
+
+            <td>
+              <router-link
+                class="file-link"
+                :to="`/${file.file_id}`"
+              >
+                {{ file.name }}
+              </router-link>
+            </td>
+
+            <td class="date date-col right">
+              {{ formatDate(file.updated_at) }}
+            </td>
+
+            <td class="date date-col right">
+              {{ formatDate(file.created_at) }}
+            </td>
+
+            <td class="actions-col right">
+              <button class="icon-btn copy-btn" @click="copyFileLink(file.file_id)" title="Copy file link">
+                <Link size="14" />
+              </button>
+              <button class="icon-btn delete-btn" @click="deleteFile(file.file_id)" title="Delete file">
+                <Trash2 size="14" />
+              </button>
+            </td>
+          </tr>
+
+          <tr v-if="!pagedFiles.length">
+            <td colspan="5" class="empty">
+              <FileCode size="32" class="empty-icon" />
+              <div>{{ search || filterDate ? 'No files match your filters' : 'No files yet' }}</div>
+              <button v-if="!search && !filterDate" class="empty-create-btn" @click="createFile">Create your first file</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div v-if="totalPages > 1" class="pagination">
+        <button class="pg-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">‹</button>
+        <template v-for="p in pageNumbers" :key="p">
+          <span v-if="p === '…'" class="pg-ellipsis">…</span>
+          <button v-else class="pg-btn" :class="{ active: p === currentPage }" @click="goToPage(p)">{{ p }}</button>
+        </template>
+        <button class="pg-btn" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">›</button>
+        <span class="pg-range">{{ rangeLabel }}</span>
+      </div>
     </div>
 
-    <table class="files-table">
-      <thead>
-        <tr>
-          <th>SR</th>
-          <th>Name</th>
-          <th class="date-col right">Updated At</th>
-          <th class="date-col right">Created At</th>
-          <th></th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr
-          v-for="(file, index) in filteredFiles"
-          :key="file.file_id"
-        >
-          <td class="sr">{{ index + 1 }}</td>
-
-          <td>
-            <router-link
-              class="file-link"
-              :to="`/${file.file_id}`"
-            >
-              {{ file.name }}
-            </router-link>
-          </td>
-          
-          <td class="date date-col right">
-            {{ formatDate(file.updated_at) }}
-          </td>
-
-          <td class="date date-col right">
-            {{ formatDate(file.created_at) }}
-          </td>
-
-          <td class="actions-col right">
-            <button
-              class="copy-btn"
-              @click="copyFileLink(file.file_id)"
-              title="Copy file link"
-            >
-              Copy
-            </button>
-            <button
-              class="delete-btn"
-              @click="deleteFile(file.file_id)"
-              title="Delete file"
-            >
-              Delete
-            </button>
-          </td>
-        </tr>
-
-        <tr v-if="!filteredFiles.length">
-          <td colspan="5" class="empty">
-            No files found
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="spacer"></div>
+    <Footer />
   </div>
 </template>
 
 <style scoped>
 .files-root {
-  min-height: 100%;
+  min-height: calc(100vh - 56px);
   padding: 16px;
   background-color: #121212;
   color: #e0e0e0;
   font-family: 'Fira Code', monospace;
+  display: flex;
+  flex-direction: column;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.list-card {
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #161616;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 .controls {
@@ -260,9 +294,8 @@ function handleDeleteCancel() {
   color: #ffffff;
 }
 
-.search-input,
-.date-input,
-.limit-select {
+.search-input {
+  width: 200px;
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid #2a2a2a;
@@ -272,23 +305,61 @@ function handleDeleteCancel() {
   outline: none;
 }
 
-.search-input {
-  width: 200px;
-}
-
-.date-input {
-  width: 140px;
-}
-
 .search-input::placeholder {
   color: #777;
 }
 
-.search-input:focus,
-.date-input:focus,
-.limit-select:focus {
+.search-input:focus {
   border-color: #555;
 }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-top: 1px solid #2a2a2a;
+}
+
+.pg-btn {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+  background: #1f1f1f;
+  color: #e0e0e0;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pg-btn:hover:not(:disabled) {
+  background: #2a2a2a;
+  border-color: #555;
+}
+
+.pg-btn:disabled {
+  color: #444;
+  cursor: default;
+}
+
+.pg-btn.active {
+  background: #3a6ea5;
+  border-color: #3a6ea5;
+  color: #fff;
+  font-weight: 600;
+}
+
+.pg-ellipsis {
+  color: #555;
+  padding: 0 4px;
+  font-size: 13px;
+}
+
 
 .files-table {
   width: 100%;
@@ -300,24 +371,29 @@ function handleDeleteCancel() {
   top: 0;
   background-color: #1f1f1f;
   color: #cfcfcf;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  padding: 10px 12px;
+  padding: 7px 12px;
   border-bottom: 1px solid #333;
   text-align: left;
 }
 
 .files-table td {
-  padding: 10px 12px;
-  font-size: 13px;
+  padding: 6px 12px;
+  font-size: 12px;
   border-bottom: 1px solid #1f1f1f;
   color: #e0e0e0;
   text-align: left;
 }
 
-.files-table tbody tr:hover {
-  background-color: #1a1a1a;
+.files-table tbody tr {
+  transition: background 0.1s;
 }
+
+.files-table tbody tr:hover {
+  background-color: #1e1e1e;
+}
+
 
 .sr {
   width: 60px;
@@ -330,7 +406,7 @@ function handleDeleteCancel() {
 }
 
 .actions-col {
-  width: 160px;
+  width: 80px;
   white-space: nowrap;
   text-align: right;
 }
@@ -355,20 +431,54 @@ function handleDeleteCancel() {
 }
 
 .empty {
-  padding: 20px;
+  padding: 40px 20px !important;
   text-align: center !important;
-  color: #777;
+  color: #555;
+  font-size: 13px;
+}
+
+.empty-icon {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.empty-create-btn {
+  margin-top: 12px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: inherit;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.empty-create-btn:hover {
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+.file-count {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #555;
+  padding-left: 4px;
+  white-space: nowrap;
 }
 
 .create-btn {
-  padding: 10px 12px;
+  padding: 6px 14px;
   font-size: 13px;
   border: 1px solid #444;
-  border-radius: 8px;
+  border-radius: 6px;
   background-color: #2a2a2a;
   color: #ffffff;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
 }
 
 .create-btn:hover {
@@ -376,35 +486,44 @@ function handleDeleteCancel() {
   border-color: #666;
 }
 
-.copy-btn,
-.delete-btn {
-  padding: 4px 10px;
-  font-size: 12px;
+.pg-range {
+  font-size: 11px;
+  color: #444;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   border: 1px solid #2a2a2a;
-  background-color: #1f1f1f;
-  color: #e0e0e0;
+  background-color: transparent;
+  color: #888;
   cursor: pointer;
-  transition: background 0.2s, border 0.2s;
-  margin-left: 8px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  margin-left: 6px;
 }
 
 .copy-btn:hover {
-  background-color: #2a2a2a;
-  border-color: #444;
+  background-color: #1f2a1f;
+  border-color: #3a7a3a;
+  color: #6dbf6d;
 }
 
 .delete-btn:hover {
-  background-color: #4f2b2b;
-  border-color: #ff5252;
-  color: #ffcici;
+  background-color: #2a1a1a;
+  border-color: #7a3a3a;
+  color: #e06060;
 }
 
-
-.copy-btn:active,
-.delete-btn:active {
-  transform: scale(0.97);
+.icon-btn:active {
+  transform: scale(0.93);
 }
+
 
 .copy-popup {
   position: fixed;
