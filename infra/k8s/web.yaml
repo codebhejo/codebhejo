@@ -19,12 +19,11 @@ spec:
         - name: gitlab-registry-secret
       containers:
         - name: codebhejo
-          image: docker.io/9ovind/codebhejo:main-frontend
+          image: docker.io/9ovind/codebhejo:fe640ae-frontend
           imagePullPolicy: Always
           ports:
             - name: codebhejo
               containerPort: 80
-
 ---
 apiVersion: v1
 kind: Service
