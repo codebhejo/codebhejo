@@ -1,0 +1,42 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: codebhejo-https-route
+  namespace: codebhejo
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: codebhejo-in-root
+  hostnames:
+    - "codebhejo.in"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: codebhejo-svc
+          port: 80
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: codebhejo-api-https-route
+  namespace: codebhejo
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: 9ovind-in
+  hostnames:
+    - "codebhejo-api.9ovind.in"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: codebhejo-api-svc
+          port: 80

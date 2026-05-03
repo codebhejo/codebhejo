@@ -8,6 +8,9 @@ on:
       - "apps/backend/**"
       - "infra/Dockerfile"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -39,3 +42,12 @@ jobs:
 
       - name: Push backend image
         run: docker push $CI_REGISTRY/$IMAGE_NAME:$TAG-backend
+
+      - name: Update image tag in k8s manifest
+        run: |
+          sed -i "s|image: .*/backend:.*|image: $CI_REGISTRY/$IMAGE_NAME:$TAG-backend|" infra/k8s/api.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add infra/k8s/api.yaml
+          git commit -m "ci: update backend image to $TAG-backend [skip ci]"
+          git push

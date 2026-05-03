@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codebhejo-api
+  namespace: codebhejo
+  labels:
+    app: codebhejo-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: codebhejo-api
+  template:
+    metadata:
+      labels:
+        app: codebhejo-api
+    spec:
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+      containers:
+        - name: express
+          image: registry.gitlab.com/9ovindyadav/codebhejo/backend:v0.0.17
+          imagePullPolicy: Always
+          ports:
+            - name: codebhejo
+              containerPort: 3000
+          volumeMounts:
+            - name: env-file
+              mountPath: /var/www/backend/.env
+              subPath: .env
+      volumes:
+        - name: env-file
+          secret:
+            secretName: env-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: codebhejo-api-svc
+  namespace: codebhejo
+  labels:
+    service: codebhejo-api
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+  selector:
+    app: codebhejo-api
