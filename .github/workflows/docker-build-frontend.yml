@@ -9,6 +9,11 @@ on:
       - "apps/cli/**"
       - "infra/Dockerfile"
       - "infra/nginx.conf"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag (defaults to branch name)"
+        required: false
 
 permissions:
   contents: write
@@ -22,7 +27,7 @@ jobs:
       CI_USERNAME: ${{ secrets.CI_USERNAME }}
       CI_PASSWORD: ${{ secrets.CI_PASSWORD }}
       IMAGE_NAME: 9ovind/codebhejo
-      TAG: ${{ github.ref_name }}
+      TAG: ${{ inputs.tag || github.ref_name }}
 
     steps:
       - name: Checkout code
