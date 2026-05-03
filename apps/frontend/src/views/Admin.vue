@@ -12,6 +12,8 @@ import {
     UserX,
     ChevronLeft,
     ChevronRight,
+    ChevronUp,
+    ChevronDown,
 } from "lucide-vue-next";
 
 const API = import.meta.env.VITE_API_URL;
@@ -33,6 +35,8 @@ const limit = 10;
 const search = ref("");
 const usersLoading = ref(false);
 const usersError = ref(null);
+const sortBy = ref("created_at");
+const sortOrder = ref("desc");
 
 async function fetchDashboard() {
     dashboardLoading.value = true;
@@ -60,6 +64,8 @@ async function fetchUsers() {
             page: page.value,
             limit,
             search: search.value,
+            sortBy: sortBy.value,
+            sortOrder: sortOrder.value,
         });
         const res = await fetch(`${API}/admin/users?${params}`, {
             credentials: "include",
@@ -88,6 +94,17 @@ function onSearch() {
 
 function goToPage(p) {
     page.value = p;
+    fetchUsers();
+}
+
+function sort(col) {
+    if (sortBy.value === col) {
+        sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
+    } else {
+        sortBy.value = col;
+        sortOrder.value = "asc";
+    }
+    page.value = 1;
     fetchUsers();
 }
 
@@ -234,11 +251,27 @@ watch(activeTab, (tab) => {
                         <table class="user-table">
                             <thead>
                                 <tr>
-                                    <th>Email</th>
+                                    <th class="sortable" @click="sort('email')">
+                                        Email
+                                        <ChevronUp v-if="sortBy === 'email' && sortOrder === 'asc'" size="11" />
+                                        <ChevronDown v-else-if="sortBy === 'email'" size="11" />
+                                    </th>
                                     <th>Verified</th>
-                                    <th>Files</th>
-                                    <th>Last Login</th>
-                                    <th>Joined</th>
+                                    <th class="sortable" @click="sort('file_count')">
+                                        Files
+                                        <ChevronUp v-if="sortBy === 'file_count' && sortOrder === 'asc'" size="11" />
+                                        <ChevronDown v-else-if="sortBy === 'file_count'" size="11" />
+                                    </th>
+                                    <th class="sortable" @click="sort('last_login_at')">
+                                        Last Login
+                                        <ChevronUp v-if="sortBy === 'last_login_at' && sortOrder === 'asc'" size="11" />
+                                        <ChevronDown v-else-if="sortBy === 'last_login_at'" size="11" />
+                                    </th>
+                                    <th class="sortable" @click="sort('created_at')">
+                                        Joined
+                                        <ChevronUp v-if="sortBy === 'created_at' && sortOrder === 'asc'" size="11" />
+                                        <ChevronDown v-else-if="sortBy === 'created_at'" size="11" />
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -503,6 +536,18 @@ watch(activeTab, (tab) => {
     color: #444;
 }
 
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sortable:hover {
+    color: #aaa;
+}
+
 /* Table */
 .user-table {
     width: 100%;
@@ -514,6 +559,7 @@ watch(activeTab, (tab) => {
     text-align: left;
     padding: 8px 12px;
     color: #666;
+    white-space: nowrap;
     font-weight: 500;
     border-bottom: 1px solid #1a1a1a;
 }

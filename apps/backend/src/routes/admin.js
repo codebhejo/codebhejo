@@ -30,6 +30,10 @@ router.get("/users", adminAuth, async (req, res) => {
     const where  = search ? "WHERE u.email LIKE ?" : "";
     const params = search ? [`%${search}%`] : [];
 
+    const SORT_COLUMNS = { email: "u.email", last_login_at: "u.last_login_at", created_at: "u.created_at", file_count: "file_count" };
+    const sortBy    = SORT_COLUMNS[req.query.sortBy] || "u.created_at";
+    const sortOrder = req.query.sortOrder === "asc" ? "ASC" : "DESC";
+
     const [
       [[{ total }]],
       [[{ dbFileCount }]],
@@ -54,7 +58,7 @@ router.get("/users", adminAuth, async (req, res) => {
          LEFT JOIN files f ON f.user_id = u.id
          ${where}
          GROUP BY u.id
-         ORDER BY u.created_at DESC
+         ORDER BY ${sortBy} ${sortOrder}
          LIMIT ? OFFSET ?`,
         [...params, limit, offset]
       ),
