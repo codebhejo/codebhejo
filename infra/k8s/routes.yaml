@@ -31,7 +31,7 @@ spec:
       namespace: traefik
       sectionName: 9ovind-in
   hostnames:
-    - "codebhejo-api.9ovind.in"
+    - "codefile-api.9ovind.in"
   rules:
     - matches:
         - path:

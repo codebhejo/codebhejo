@@ -1,28 +1,77 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import Navbar from "../components/Navbar.vue";
 import Footer from "../components/Footer.vue";
-import { LayoutDashboard, Users, FileCode, CircleCheck, CircleDashed, ShieldCheck, UserX } from "lucide-vue-next";
+import { LayoutDashboard, Users, FileCode, CircleCheck, CircleDashed, ShieldCheck, UserX, ChevronLeft, ChevronRight } from "lucide-vue-next";
 
 const API = import.meta.env.VITE_API_URL;
 
 const activeTab = ref("dashboard");
-const users = ref([]);
+
+// Dashboard data
+const dashboardStats = ref(null);
 const anonymousFileCount = ref(0);
-const loading = ref(true);
-const error = ref(null);
+const dashboardLoading = ref(true);
+const dashboardError = ref(null);
+
+// Users data
+const users = ref([]);
+const total = ref(0);
+const totalPages = ref(1);
+const page = ref(1);
+const limit = 20;
 const search = ref("");
+const usersLoading = ref(false);
+const usersError = ref(null);
 
-const stats = computed(() => ({
-  total: users.value.length,
-  verified: users.value.filter(u => u.last_login_at).length,
-  files: users.value.reduce((sum, u) => sum + Number(u.file_count), 0),
-}));
+async function fetchDashboard() {
+  dashboardLoading.value = true;
+  dashboardError.value = null;
+  try {
+    const res = await fetch(`${API}/admin/users?page=1&limit=1`, { credentials: "include" });
+    if (!res.ok) throw new Error("Failed to load stats");
+    const data = await res.json();
+    dashboardStats.value = data.dashboardStats;
+    anonymousFileCount.value = data.anonymousFileCount;
+  } catch (e) {
+    dashboardError.value = e.message;
+  } finally {
+    dashboardLoading.value = false;
+  }
+}
 
-const filtered = computed(() => {
-  if (!search.value) return users.value;
-  return users.value.filter(u => u.email.toLowerCase().includes(search.value.toLowerCase()));
-});
+async function fetchUsers() {
+  usersLoading.value = true;
+  usersError.value = null;
+  try {
+    const params = new URLSearchParams({ page: page.value, limit, search: search.value });
+    const res = await fetch(`${API}/admin/users?${params}`, { credentials: "include" });
+    if (!res.ok) throw new Error("Failed to load users");
+    const data = await res.json();
+    users.value = data.users;
+    total.value = data.total;
+    totalPages.value = data.totalPages;
+    if (!dashboardStats.value) {
+      dashboardStats.value = data.dashboardStats;
+      anonymousFileCount.value = data.anonymousFileCount;
+      dashboardLoading.value = false;
+    }
+  } catch (e) {
+    usersError.value = e.message;
+  } finally {
+    usersLoading.value = false;
+  }
+}
+
+function onSearch() {
+  page.value = 1;
+  fetchUsers();
+}
+
+function goToPage(p) {
+  page.value = p;
+  fetchUsers();
+}
 
 function formatDate(val) {
   if (!val) return "—";
@@ -31,18 +80,13 @@ function formatDate(val) {
   });
 }
 
-onMounted(async () => {
-  try {
-    const res = await fetch(`${API}/admin/users`, { credentials: "include" });
-    if (!res.ok) throw new Error("Failed to load users");
-    const data = await res.json();
-    users.value = data.users;
-    anonymousFileCount.value = data.anonymousFileCount;
-  } catch (e) {
-    error.value = e.message;
-  } finally {
-    loading.value = false;
-  }
+const pageStart = computed(() => (page.value - 1) * limit + 1);
+const pageEnd   = computed(() => Math.min(page.value * limit, total.value));
+
+onMounted(fetchUsers);
+
+watch(activeTab, (tab) => {
+  if (tab === "users" && users.value.length === 0) fetchUsers();
 });
 </script>
 
@@ -85,14 +129,14 @@ onMounted(async () => {
         <template v-if="activeTab === 'dashboard'">
           <h2 class="page-title">Dashboard</h2>
 
-          <div v-if="loading" class="state-msg">Loading...</div>
-          <div v-else-if="error" class="state-msg error">{{ error }}</div>
+          <div v-if="dashboardLoading" class="state-msg">Loading...</div>
+          <div v-else-if="dashboardError" class="state-msg error">{{ dashboardError }}</div>
 
           <div v-else class="stat-grid">
             <div class="stat-card">
               <div class="stat-icon users-icon"><Users size="18" /></div>
               <div class="stat-info">
-                <span class="stat-value">{{ stats.verified }}</span>
+                <span class="stat-value">{{ dashboardStats?.verifiedUsers ?? 0 }}</span>
                 <span class="stat-label">Active Users</span>
               </div>
             </div>
@@ -100,7 +144,7 @@ onMounted(async () => {
             <div class="stat-card">
               <div class="stat-icon files-icon"><FileCode size="18" /></div>
               <div class="stat-info">
-                <span class="stat-value">{{ stats.files }}</span>
+                <span class="stat-value">{{ dashboardStats?.totalFiles ?? 0 }}</span>
                 <span class="stat-label">Files Shared</span>
               </div>
             </div>
@@ -108,7 +152,7 @@ onMounted(async () => {
             <div class="stat-card">
               <div class="stat-icon total-icon"><ShieldCheck size="18" /></div>
               <div class="stat-info">
-                <span class="stat-value">{{ stats.total }}</span>
+                <span class="stat-value">{{ dashboardStats?.totalUsers ?? 0 }}</span>
                 <span class="stat-label">Total Registered</span>
               </div>
             </div>
@@ -127,16 +171,21 @@ onMounted(async () => {
         <template v-else-if="activeTab === 'users'">
           <h2 class="page-title">Users</h2>
 
-          <div v-if="loading" class="state-msg">Loading...</div>
-          <div v-else-if="error" class="state-msg error">{{ error }}</div>
-
-          <template v-else>
+          <div class="users-toolbar">
             <input
               v-model="search"
               class="search-input"
               placeholder="Search by email..."
+              @keyup.enter="onSearch"
+              @input="onSearch"
             />
+            <span class="total-label" v-if="total > 0">{{ total }} users</span>
+          </div>
 
+          <div v-if="usersLoading" class="state-msg">Loading...</div>
+          <div v-else-if="usersError" class="state-msg error">{{ usersError }}</div>
+
+          <template v-else>
             <table class="user-table">
               <thead>
                 <tr>
@@ -148,7 +197,7 @@ onMounted(async () => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="user in filtered" :key="user.id">
+                <tr v-for="user in users" :key="user.id">
                   <td class="email-cell">
                     <span>{{ user.email }}</span>
                     <span v-if="user.is_admin" class="admin-badge">admin</span>
@@ -166,6 +215,27 @@ onMounted(async () => {
                 </tr>
               </tbody>
             </table>
+
+            <div class="pagination" v-if="totalPages > 1">
+              <span class="page-info">{{ pageStart }}–{{ pageEnd }} of {{ total }}</span>
+              <div class="page-controls">
+                <button class="page-btn" :disabled="page === 1" @click="goToPage(page - 1)">
+                  <ChevronLeft size="14" />
+                </button>
+                <button
+                  v-for="p in totalPages"
+                  :key="p"
+                  class="page-btn"
+                  :class="{ active: p === page }"
+                  @click="goToPage(p)"
+                >
+                  {{ p }}
+                </button>
+                <button class="page-btn" :disabled="page === totalPages" @click="goToPage(page + 1)">
+                  <ChevronRight size="14" />
+                </button>
+              </div>
+            </div>
           </template>
         </template>
 
@@ -186,7 +256,6 @@ onMounted(async () => {
   font-family: 'Fira Code', monospace;
 }
 
-/* Layout */
 .admin-body {
   flex: 1;
   display: flex;
@@ -240,15 +309,8 @@ onMounted(async () => {
   transition: background 0.12s, color 0.12s;
 }
 
-.nav-item:hover {
-  background: #161616;
-  color: #ccc;
-}
-
-.nav-item.active {
-  background: #1e1e1e;
-  color: #ffffff;
-}
+.nav-item:hover { background: #161616; color: #ccc; }
+.nav-item.active { background: #1e1e1e; color: #ffffff; }
 
 /* Content */
 .admin-content {
@@ -300,28 +362,20 @@ onMounted(async () => {
 .total-icon  { background: #1a1208; color: #a37c40; }
 .anon-icon   { background: #1f0f0f; color: #a05050; }
 
-.stat-info {
+.stat-info { display: flex; flex-direction: column; gap: 3px; }
+.stat-value { font-size: 26px; font-weight: 700; color: #fff; line-height: 1; }
+.stat-label { font-size: 11px; color: #777; }
+
+/* Users toolbar */
+.users-toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  gap: 12px;
 }
 
-.stat-value {
-  font-size: 26px;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 11px;
-  color: #777;
-}
-
-/* Users table */
 .search-input {
   width: 100%;
-  max-width: 320px;
+  max-width: 300px;
   padding: 8px 12px;
   background: #161616;
   border: 1px solid #1e1e1e;
@@ -337,6 +391,9 @@ onMounted(async () => {
 .search-input:focus { border-color: #333; }
 .search-input::placeholder { color: #333; }
 
+.total-label { font-size: 12px; color: #444; }
+
+/* Table */
 .user-table {
   width: 100%;
   border-collapse: collapse;
@@ -359,11 +416,7 @@ onMounted(async () => {
 
 .user-table tbody tr:hover td { background: #111; }
 
-.email-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.email-cell { display: flex; align-items: center; gap: 8px; }
 
 .admin-badge {
   font-size: 10px;
@@ -377,21 +430,47 @@ onMounted(async () => {
 .verified   { color: #4ade80; }
 .unverified { color: #2a2a2a; }
 
-.num-cell {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #666;
-}
-
+.num-cell { display: flex; align-items: center; gap: 6px; color: #666; }
 .file-icon { color: #333; }
 .muted { color: #777; }
 
-.state-msg {
-  font-size: 13px;
-  color: #444;
-  padding: 20px 0;
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
 }
 
+.page-info { font-size: 12px; color: #444; }
+
+.page-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  background: #161616;
+  border: 1px solid #1e1e1e;
+  border-radius: 5px;
+  color: #666;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.page-btn:hover:not(:disabled) { background: #1e1e1e; color: #ccc; border-color: #333; }
+.page-btn.active { background: #1e1e1e; color: #fff; border-color: #333; }
+.page-btn:disabled { opacity: 0.3; cursor: default; }
+
+.state-msg { font-size: 13px; color: #444; padding: 20px 0; }
 .state-msg.error { color: #ef4444; }
 </style>
