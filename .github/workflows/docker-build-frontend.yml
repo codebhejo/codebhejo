@@ -27,7 +27,7 @@ jobs:
       CI_USERNAME: ${{ secrets.CI_USERNAME }}
       CI_PASSWORD: ${{ secrets.CI_PASSWORD }}
       IMAGE_NAME: 9ovind/codebhejo
-      TAG: ${{ inputs.tag || github.ref_name }}
+      TAG: ${{ inputs.tag || github.sha }}
 
     steps:
       - name: Checkout code
@@ -52,11 +52,11 @@ jobs:
 
       - name: Update image tag in k8s manifest
         run: |
-          IMAGE="$CI_REGISTRY/$IMAGE_NAME:$TAG-frontend" \
-          yq -i '(select(.kind == "Deployment").spec.template.spec.containers[0].image) = strenv(IMAGE)' infra/k8s/web.yaml
+          export IMAGE="$CI_REGISTRY/$IMAGE_NAME:${TAG::7}-frontend"
+          yq -i '(select(.kind == "Deployment") | .spec.template.spec.containers[0].image) = strenv(IMAGE)' infra/k8s/web.yaml
           git diff --quiet infra/k8s/web.yaml && exit 0
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add infra/k8s/web.yaml
-          git commit -m "ci: update frontend image to $TAG-frontend [skip ci]"
+          git commit -m "ci: update frontend image to ${TAG::7}-frontend [skip ci]"
           git push
