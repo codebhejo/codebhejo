@@ -19,7 +19,7 @@ spec:
         - name: gitlab-registry-secret
       containers:
         - name: express
-          image: docker.io/9ovind/codebhejo:87a2170-backend
+          image: docker.io/9ovind/codebhejo:4927c14-backend
           imagePullPolicy: Always
           ports:
             - name: codebhejo
