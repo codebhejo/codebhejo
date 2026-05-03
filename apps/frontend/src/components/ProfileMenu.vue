@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
-import { Files, LogOut } from "lucide-vue-next";
+import { Files, LogOut, ShieldCheck } from "lucide-vue-next";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -50,6 +50,14 @@ onBeforeUnmount(() => document.removeEventListener("click", handleClickOutside))
           <Files size="14" />
           My Files
         </button>
+
+        <template v-if="auth.isAdmin">
+          <div class="divider"></div>
+          <button class="menu-item admin" @click="router.push('/admin'); showMenu = false">
+            <ShieldCheck size="14" />
+            Admin Dashboard
+          </button>
+        </template>
 
         <div class="divider"></div>
 
@@ -136,6 +144,15 @@ onBeforeUnmount(() => document.removeEventListener("click", handleClickOutside))
 .menu-item:hover {
   background: #222;
   color: #e0e0e0;
+}
+
+.menu-item.admin {
+  color: #4a6fa5;
+}
+
+.menu-item.admin:hover {
+  background: #0f1a2e;
+  color: #7da4d8;
 }
 
 .menu-item.danger:hover {

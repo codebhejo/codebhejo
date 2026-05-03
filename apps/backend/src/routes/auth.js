@@ -71,6 +71,11 @@ router.get("/verify", async (req, res) => {
     [record.id]
   );
 
+  await db.query(
+    "UPDATE users SET last_login_at = NOW() WHERE id = ?",
+    [record.user_id]
+  );
+
   const jwtToken = jwt.sign(
     { userId: record.user_id },
     process.env.JWT_SECRET,
@@ -91,7 +96,7 @@ router.get("/me", auth, async (req, res) => {
   try {
       const [rows] = await db.query(
           `
-          SELECT email
+          SELECT email, is_admin
           FROM users
           WHERE id = ?
           LIMIT 1
@@ -102,7 +107,8 @@ router.get("/me", auth, async (req, res) => {
       return res.json({
         loggedIn: true,
         userId: req.user.userId,
-        email: rows[0].email
+        email: rows[0].email,
+        isAdmin: !!rows[0].is_admin,
       });
   } catch {
     return res.sendStatus(401);
