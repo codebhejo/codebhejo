@@ -32,7 +32,6 @@ spec:
         - name: env-file
           secret:
             secretName: env-secret
-
 ---
 apiVersion: v1
 kind: Service
