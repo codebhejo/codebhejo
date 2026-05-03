@@ -7,62 +7,85 @@ Instantly create and share code snippets with your team.
 ## Table of Contents
 
 - [Development Guide](#development-guide)
-  - [Prerequisite](#prerequisite)
+  - [Prerequisites](#prerequisites)
   - [Local Setup](#local-setup)
-  - [Creating AWS S3 credentials](#creating-aws-s3-credentials)
-  - [CLI Tool Development](#cli-tool-development)
+  - [Make Targets](#make-targets)
+  - [AWS S3 Setup (production)](#aws-s3-setup-production)
+  - [CLI Development](#cli-development)
 - [Contributing](#contributing)
 - [License](#license)
 
-## Development guide
+## Development Guide
 
-### Prerequisite
-1. NodeJS
-2. MySQL
-3. Golang
-4. AWS S3
+### Prerequisites
 
-### Local setup
-1. Make a fork and clone repo in ypur local system
+- [Node.js](https://nodejs.org/)
+- [Go](https://go.dev/)
+- [Docker](https://docs.docker.com/get-docker/) (for local infrastructure)
 
-2. Set backend env file
-    ```bash
-    cp backend/.env.example backend/.env
-    ```
+No AWS account needed for local development — MinIO runs locally as a drop-in S3 replacement.
 
-3. Install dependecies
-    ```bash
-    npm install
-    ```
+### Local Setup
 
-4. Setup MySQL instance and create a Database `codebhejo`
+```bash
+# 1. Clone and enter the repo
+git clone <repo-url> && cd codebhejo
 
-5. Migrate Database tables
-    ```bash
-    npm run migrate
-    ```
+# 2. Start local infrastructure (MySQL + MinIO + phpMyAdmin)
+make infra-up
 
-6. Start frontend and backend service
-    ```bash
-    npm run dev
-    ```
+# 3. Install deps and create your .env (pre-filled to match docker services)
+make setup
+#    → only set JWT_SECRET in apps/backend/.env, everything else works out of the box
 
-7. Open in Browser [http://localhost:5173](http://localhost:5173)
+# 4. Run migrations and start the app
+make migrate && make dev
+```
 
+Open [http://localhost:5173](http://localhost:5173)
 
-### Creating AWS S3 credentials
+**Local service URLs:**
 
-Now to set S3 bucket env variables follow below steps:
+| Service    | URL                                              |
+|------------|--------------------------------------------------|
+| App        | http://localhost:5173                            |
+| API        | http://localhost:3000                            |
+| phpMyAdmin | http://localhost:8080                            |
+| MinIO UI   | http://localhost:9001 (minioadmin / minioadmin)  |
+| Mailpit    | http://localhost:8025 (catches all outgoing mail)|
+
+### Make Targets
+
+| Target | Description |
+|--------|-------------|
+| `make infra-up` | Start local infrastructure via Docker |
+| `make infra-down` | Stop local infrastructure |
+| `make infra-logs` | Tail infrastructure logs |
+| `make setup` | First-time setup: copy `.env`, install all deps |
+| `make dev` | Run frontend + backend (Ctrl+C stops both) |
+| `make dev-frontend` | Run frontend only |
+| `make dev-backend` | Run backend only |
+| `make build` | Production build of frontend |
+| `make migrate` | Run pending database migrations |
+| `make rollback` | Rollback last migration |
+| `make cli-run` | Run CLI locally |
+| `make cli-build` | Build CLI Linux binary |
+| `make cli-install` | Build and install CLI to `/usr/local/bin` |
+
+### AWS S3 Setup (production)
+
+For production deployments, replace the MinIO values in your `.env` with real AWS credentials:
+
 ```bash
 S3_ACCESS_KEY=""
 S3_SECRET_KEY=""
 S3_BUCKET="codebhejo"
 S3_REGION="ap-south-1"
+# Remove S3_ENDPOINT to use AWS S3
 ```
 
-1. Login to your AWS account and open IAM (Identity and access management)
-2. Create a user named `codebhejo`
-3. Now go to `policies` and create a policy named `codebhejo-s3-bucket` with below json value to give user minimum required access of s3 bucket
+1. In AWS IAM, create a user named `codebhejo`
+2. Create and attach a policy named `codebhejo-s3-bucket`:
 
     ```json
     {
@@ -77,61 +100,39 @@ S3_REGION="ap-south-1"
             {
                 "Sid": "CodebhejoS3Access",
                 "Effect": "Allow",
-                "Action": [
-                    "s3:GetObject",
-                    "s3:PutObject",
-                    "s3:DeleteObject"
-                ],
+                "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
                 "Resource": "arn:aws:s3:::codebhejo/*"
             }
         ]
     }
     ```
-4. Open user `codebhejo` and attach permission policy `codebhejo-s3-bucket` to user.
-5. After setting permission policy to user open `Security credentials` section and create `Access key`
 
+3. Under Security Credentials, create an Access Key
 
-### CLI tool development
-1. Make sure `Golang` is installed
-    ```bash
-    go version
-    ```
-1. Change directory to `cli` and run all commands init
-    ```bash
-    cd cli
-    ```
+### CLI Development
 
-2. Install `golang` dependecies
-    ```bash
-    go mod tidy
-    ```
-4. Run app
-    ```bash
-    go run main.go
-    ```
-5. Build a `Linux` binary
-    ```bash
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -ldflags "-X github.com/codebhejo/codebhejo/cli/internal/config.API=http://localhost:3000 -X github.com/codebhejo/codebhejo/cli/internal/config.WEB_URL=http://localhost:5173" \
-    -o codebhejo-linux-amd64 ./main.go
+```bash
+make cli-run          # run locally
+make cli-build        # build Linux binary
+make cli-install      # install to /usr/local/bin
+codebhejo version
+```
 
-    # Executable permission
-    chmod +x codebhejo-linux-amd64
+To target a specific environment, override the URLs at build time:
 
-    # Move binary to local user bin directory
-    sudo mv codebhejo-linux-amd64 /usr/local/bin/codebhejo
-
-    # check version
-    codebhejo version
-    ```
-
+```bash
+cd apps/cli && \
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+go build -ldflags "-X github.com/codebhejo/codebhejo/cli/internal/config.API=https://api.example.com \
+                   -X github.com/codebhejo/codebhejo/cli/internal/config.WEB_URL=https://example.com" \
+-o codebhejo-linux-amd64 ./main.go
+```
 
 ## Contributing
 
 Contributions are welcome!
 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting a pull request.
-
 
 ## License
 
