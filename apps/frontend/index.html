@@ -2,14 +2,211 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- =============================================
+         DYNAMIC CANONICAL — updates on every route change.
+         Works with React Router / history API SPAs.
+         ============================================= -->
+    <link id="canonical-tag" rel="canonical" href="https://codebhejo.in/" />
+    <script>
+      (function () {
+        function setCanonical() {
+          var tag = document.getElementById("canonical-tag");
+          if (tag) {
+            tag.setAttribute(
+              "href",
+              "https://codebhejo.in" + window.location.pathname
+            );
+          }
+        }
+        setCanonical();
+        // patch pushState & replaceState so SPA route changes update canonical
+        ["pushState", "replaceState"].forEach(function (fn) {
+          var orig = history[fn];
+          history[fn] = function () {
+            orig.apply(this, arguments);
+            setCanonical();
+          };
+        });
+        window.addEventListener("popstate", setCanonical);
+      })();
+    </script>
+
+    <!-- =============================================
+         FAVICON & PWA ICONS
+         ============================================= -->
     <link rel="icon" type="image/svg+xml" href="/codebhejo.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#6366f1" />
+
+    <!-- =============================================
+         VIEWPORT & ROBOTS
+         ============================================= -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="/src/style.css" rel="stylesheet">
-    <title>CodeBhejo</title>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6275528006958350"
-     crossorigin="anonymous"></script>
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+
+    <!-- =============================================
+         PRIMARY META — Title + Description + Keywords
+         Keyword strategy:
+           Tier 1 (high volume): file sharing, send files online, share files
+           Tier 2 (intent):      share file without login, file transfer free,
+                                 send large files online, instant file sharing
+           Tier 3 (brand/local): codebhejo, code bhejo, file share india
+         ============================================= -->
+    <title>CodeBhejo – Free Instant File Sharing | Send Files Online Without Login</title>
+    <meta
+      name="description"
+      content="CodeBhejo is the fastest free file sharing tool. Share files, images, documents & code instantly — no login, no signup, no size hassle. Send files online in seconds."
+    />
+    <meta
+      name="keywords"
+      content="file sharing, share files online, send files online, free file transfer, share files without login, instant file sharing, file send karo, online file share, large file transfer, send documents online, image sharing, code sharing, codebhejo, file upload and share, temporary file storage"
+    />
+
+    <!-- =============================================
+         AUTHOR & SITE INFO
+         ============================================= -->
+    <meta name="author" content="CodeBhejo" />
+    <meta name="copyright" content="CodeBhejo" />
+    <meta name="language" content="en-IN" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="rating" content="general" />
+    <meta name="geo.region" content="IN" />
+    <meta name="geo.country" content="India" />
+
+    <!-- =============================================
+         OPEN GRAPH (Facebook, WhatsApp, LinkedIn)
+         ============================================= -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://codebhejo.in/" />
+    <meta property="og:site_name" content="CodeBhejo" />
+    <meta
+      property="og:title"
+      content="CodeBhejo – Free Instant File Sharing Online"
+    />
+    <meta
+      property="og:description"
+      content="Share files, images, documents & code instantly. No login needed. Fast, free, and simple file transfer for everyone."
+    />
+    <meta property="og:image" content="https://codebhejo.in/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="CodeBhejo – Instant File Sharing" />
+    <meta property="og:locale" content="en_IN" />
+
+    <!-- =============================================
+         TWITTER / X CARD
+         ============================================= -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@codebhejo" />
+    <meta name="twitter:creator" content="@codebhejo" />
+    <meta
+      name="twitter:title"
+      content="CodeBhejo – Free Instant File Sharing Online"
+    />
+    <meta
+      name="twitter:description"
+      content="Share files, images, documents & code instantly. No login needed. Fast, free, and simple."
+    />
+    <meta name="twitter:image" content="https://codebhejo.in/og-image.png" />
+    <meta name="twitter:image:alt" content="CodeBhejo – Instant File Sharing" />
+
+    <!-- =============================================
+         STRUCTURED DATA — JSON-LD
+         1. WebSite (enables Sitelinks Search Box)
+         2. WebApplication (rich results for apps)
+         3. Organization (Knowledge Panel signal)
+         ============================================= -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://codebhejo.in/#website",
+          "url": "https://codebhejo.in/",
+          "name": "CodeBhejo",
+          "description": "Free instant file sharing — no login required.",
+          "inLanguage": "en-IN",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://codebhejo.in/search?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://codebhejo.in/#app",
+          "name": "CodeBhejo",
+          "url": "https://codebhejo.in/",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "All",
+          "browserRequirements": "Requires JavaScript",
+          "description": "Share files, images, documents and code instantly online for free — no login or signup required.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+          },
+          "featureList": [
+            "Instant file sharing",
+            "No login required",
+            "Free file transfer",
+            "Share images online",
+            "Share documents online",
+            "Code snippet sharing"
+          ]
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://codebhejo.in/#organization",
+          "name": "CodeBhejo",
+          "url": "https://codebhejo.in/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://codebhejo.in/codebhejo.svg"
+          },
+          "sameAs": []
+        }
+      ]
+    }
+    </script>
+
+    <!-- =============================================
+         PRECONNECT (performance — also a ranking signal)
+         ============================================= -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- =============================================
+         GOOGLE ADSENSE
+         ============================================= -->
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6275528006958350"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- =============================================
+         STYLES
+         ============================================= -->
+    <link href="/src/style.css" rel="stylesheet" />
+
+    <title>CodeBhejo – Free Instant File Sharing | Send Files Online Without Login</title>
   </head>
   <body>
+    <!-- Accessible no-JS fallback (also crawlable text for SEO) -->
+    <noscript>
+      <div style="text-align:center;padding:2rem;font-family:sans-serif">
+        <h1>CodeBhejo – Free Instant File Sharing</h1>
+        <p>Share files, images, documents and code online for free. No login required. Please enable JavaScript to use CodeBhejo.</p>
+      </div>
+    </noscript>
+
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
